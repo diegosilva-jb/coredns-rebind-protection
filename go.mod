@@ -1,4 +1,4 @@
-module github.com/4390c336/stopdnsrebind
+module github.com/diegosilva-jb/coredns-rebind-protection
 
 go 1.21
 

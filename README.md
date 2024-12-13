@@ -29,8 +29,16 @@ The import order of this plugin matters, it is possible that it will not work de
 ### 🔒 Interface Local Multicast
 - **`224.0.0.0/24`**
 
-### 🔒 DenyList
-- Add your entries in the plugin configuration.
+## ⚙️ Parameters
+
+### ✅ Allow List
+- Add domains to bypass rebinding protection.
+
+### 🚫 Deny List
+- Specify entries to block in the plugin configuration.
+
+### 🧪 Dry Run Mode
+- The plugin will only log actions instead of blocking them. Use this parameter to test without enforcing rules.
 
 ---
 
@@ -42,6 +50,7 @@ Keeping the network secure! 🔐
 stopdnsrebind [ZONES...] {
     allow [ZONES...]
     deny [IPNet]
+    dryrun
 }
 ```
 
@@ -56,6 +65,14 @@ To demonstrate the usage of plugin stopdnsrebind, here we provide some typical e
     stopdnsrebind {
         allow internal.example.org
         deny 192.0.2.1/24
+    }
+}
+~~~
+
+~~~ corefile
+. {
+    stopdnsrebind {
+        dryrun
     }
 }
 ~~~

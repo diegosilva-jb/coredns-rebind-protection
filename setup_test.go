@@ -62,6 +62,13 @@ func Test_setup(t *testing.T) {
 			}`,
 			true,
 		},
+		{
+			"enable dry run mode",
+			`stopdnsrebind {
+				dryrun
+			}`,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

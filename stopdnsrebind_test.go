@@ -109,7 +109,7 @@ func TestBlockingResponse(t *testing.T) {
 				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
-			config: "yep",
+			config: "deny",
 		},
 		{
 			Expected: dns.RcodeRefused,
@@ -143,6 +143,15 @@ func TestBlockingResponse(t *testing.T) {
 				Qtype:  dns.TypeAAAA,
 			},
 		},
+		{
+			Expected: dns.RcodeSuccess,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 127.0.0.1")},
+				Qname:  "example.refused.org.",
+				Qtype:  dns.TypeA,
+			},
+			config: "dryrun",
+		},
 	}
 
 	for _, tc := range tests {
@@ -157,12 +166,17 @@ func TestBlockingResponse(t *testing.T) {
 		o := &Stopdnsrebind{Next: tHandler}
 		w := dnstest.NewRecorder(&test.ResponseWriter{})
 
-		_, ipNet, _ := net.ParseCIDR("192.0.2.1/24")
-
-		if tc.config != "" {
-			o.AllowList = []string{"hello.com."}
-			o.DenyList = []net.IPNet{*ipNet}
+		switch tc.config {
+		case "deny":
+			_, ipNet, _ := net.ParseCIDR("192.0.2.1/24")
+			if tc.config != "" {
+				o.AllowList = []string{"hello.com."}
+				o.DenyList = []net.IPNet{*ipNet}
+			}
+		case "dryrun":
+			o.DryRun = true
 		}
+
 		_, err := o.ServeDNS(context.TODO(), w, m)
 
 		if err != nil {

@@ -69,15 +69,16 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 			// Keeping the network secure!
 		*/
 
-		if a.DryRun {
-			log.Warningf("[DRY RUN] - REFUSED DNAME: [%s] | IPAdrr: [%s]", state.QName(), ip)
-
-			w.WriteMsg(nw.Msg)
-			return 0, nil
-		}
-
 		if !ip.IsGlobalUnicast() || ip.IsInterfaceLocalMulticast() ||
 			ip.IsPrivate() || shouldDeny(ip, a.DenyList) {
+
+			if a.DryRun {
+				log.Warningf("[DRY RUN] - REFUSED DNAME: [%s] | IPAdrr: [%s]", state.QName(), ip)
+
+				w.WriteMsg(nw.Msg)
+				return 0, nil
+			}
+
 			m := new(dns.Msg)
 			m.SetRcode(r, dns.RcodeRefused)
 			w.WriteMsg(m)

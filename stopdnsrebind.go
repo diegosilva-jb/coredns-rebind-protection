@@ -5,15 +5,19 @@ import (
 	"net"
 
 	"github.com/coredns/coredns/plugin"
+	clog "github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/coredns/coredns/plugin/pkg/nonwriter"
 	"github.com/coredns/coredns/request"
 	"github.com/miekg/dns"
 )
 
+var log = clog.NewWithPlugin("stopdnsrebind")
+
 type Stopdnsrebind struct {
 	Next      plugin.Handler
 	AllowList []string
 	DenyList  []net.IPNet
+	DryRun    bool
 }
 
 // ServeDNS implements the plugin.Handler interface.
@@ -64,6 +68,13 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 
 			// Keeping the network secure!
 		*/
+
+		if a.DryRun {
+			log.Warningf("[DRY RUN] - REFUSED DNAME: [%s] | IPAdrr: [%s]", state.QName(), ip)
+
+			w.WriteMsg(nw.Msg)
+			return 0, nil
+		}
 
 		if !ip.IsGlobalUnicast() || ip.IsInterfaceLocalMulticast() ||
 			ip.IsPrivate() || shouldDeny(ip, a.DenyList) {
